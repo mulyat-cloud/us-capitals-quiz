@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>US Capitals Quiz</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --green: #2E6F40;
+            --green-dark: #245534;
+            --green-light: #3a8a50;
+            --white: #ffffff;
+            --white-dim: rgba(255,255,255,0.6);
+            --white-faint: rgba(255,255,255,0.15);
+            --card-bg: #245534;
+            --accent: #7fcc96;
+        }
+
+        body {
+            font-family: Georgia, 'Times New Roman', serif;
+            background-color: var(--green);
+            color: var(--white);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 640px;
+        }
+
+        /* START SCREEN */
+        #start-screen {
+            text-align: center;
+            animation: fadeIn 0.6s ease;
+        }
+
+        .star-banner {
+            font-size: 28px;
+            letter-spacing: 8px;
+            margin-bottom: 24px;
+            opacity: 0.7;
+            color: var(--white);
+        }
+
+        h1 {
+            font-family: Georgia, serif;
+            font-size: clamp(36px, 8vw, 64px);
+            font-weight: bold;
+            line-height: 1.1;
+            color: var(--white);
+            margin-bottom: 8px;
+        }
+
+        h1 span {
+            color: var(--accent);
+        }
+
+        .subtitle {
+            font-size: 16px;
+            color: var(--white-dim);
+            margin-bottom: 48px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .divider {
+            width: 60px;
+            height: 3px;
+            background: var(--white);
+            margin: 24px auto;
+            opacity: 0.4;
+        }
+
+        .start-btn {
+            background: var(--white);
+            color: var(--green);
+            border: none;
+            padding: 18px 48px;
+            font-family: Georgia, serif;
+            font-size: 16px;
+            font-weight: bold;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .start-btn:hover {
+            background: var(--accent);
+            transform: translateY(-2px);
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin-top: 40px;
+        }
+
+        .info-item {
+            text-align: center;
+        }
+
+        .info-num {
+            font-family: Georgia, serif;
+            font-size: 32px;
+            font-weight: bold;
+            color: var(--white);
+        }
+
+        .info-label {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--white-dim);
+        }
+
+        /* QUIZ SCREEN */
+        #quiz-screen {
+            display: none;
+            animation: fadeIn 0.4s ease;
+        }
+
+        .progress-bar-wrap {
+            background: var(--white-faint);
+            height: 4px;
+            border-radius: 2px;
+            margin-bottom: 32px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: var(--white);
+            transition: width 0.4s ease;
+        }
+
+        .question-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .question-num {
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--white);
+            font-weight: bold;
+        }
+
+        .score-display {
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--white-dim);
+        }
+
+        .question-card {
+            background: var(--card-bg);
+            border: 1px solid var(--white-faint);
+            padding: 36px;
+            margin-bottom: 24px;
+            position: relative;
+        }
+
+        .question-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0;
+            width: 4px;
+            height: 100%;
+            background: var(--white);
+            opacity: 0.4;
+        }
+
+        .question-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            color: var(--white-dim);
+            margin-bottom: 12px;
+            font-weight: bold;
+        }
+
+        .question-text {
+            font-family: Georgia, serif;
+            font-size: clamp(20px, 4vw, 28px);
+            font-weight: bold;
+            line-height: 1.3;
+            color: var(--white);
+        }
+
+        .options-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .option-btn {
+            background: var(--white-faint);
+            border: 1px solid rgba(255,255,255,0.25);
+            color: var(--white);
+            padding: 16px 20px;
+            text-align: left;
+            cursor: pointer;
+            font-family: Georgia, serif;
+            font-size: 15px;
+            transition: all 0.15s ease;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .option-btn:hover:not(:disabled) {
+            background: rgba(255,255,255,0.2);
+            border-color: var(--white);
+            transform: translateX(4px);
+        }
+
+        .option-btn:disabled {
+            cursor: default;
+        }
+
+        .option-btn.correct {
+            background: rgba(39,174,96,0.25);
+            border-color: #2ecc71;
+            color: #ffffff;
+        }
+
+        .option-btn.wrong {
+            background: rgba(231,76,60,0.25);
+            border-color: #e74c3c;
+            color: #ffffff;
+        }
+
+        .option-btn.reveal {
+            background: rgba(39,174,96,0.12);
+            border-color: rgba(39,174,96,0.5);
+            color: rgba(255,255,255,0.8);
+        }
+
+        .option-letter {
+            font-family: Georgia, serif;
+            font-size: 18px;
+            font-weight: bold;
+            color: var(--white);
+            min-width: 24px;
+            opacity: 0.7;
+        }
+
+        .feedback {
+            text-align: center;
+            font-size: 15px;
+            font-weight: bold;
+            min-height: 24px;
+            letter-spacing: 1px;
+            margin-bottom: 16px;
+            text-transform: uppercase;
+            font-family: Georgia, serif;
+        }
+
+        .feedback.correct { color: var(--accent); }
+        .feedback.wrong { color: #e74c3c; }
+
+        .next-btn {
+            width: 100%;
+            background: var(--white);
+            color: var(--green);
+            border: none;
+            padding: 16px;
+            font-family: Georgia, serif;
+            font-size: 15px;
+            font-weight: bold;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: none;
+        }
+
+        .next-btn:hover {
+            background: var(--accent);
+        }
+
+        /* RESULTS SCREEN */
+        #results-screen {
+            display: none;
+            text-align: center;
+            animation: fadeIn 0.6s ease;
+        }
+
+        .results-card {
+            background: var(--card-bg);
+            border: 1px solid var(--white-faint);
+            padding: 48px 36px;
+            margin-bottom: 24px;
+        }
+
+        .results-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            color: var(--white-dim);
+            margin-bottom: 16px;
+        }
+
+        .results-score {
+            font-family: Georgia, serif;
+            font-size: clamp(64px, 15vw, 96px);
+            font-weight: bold;
+            color: var(--white);
+            line-height: 1;
+        }
+
+        .results-score span {
+            color: var(--accent);
+        }
+
+        .results-total {
+            font-size: 18px;
+            color: var(--white-dim);
+            margin-top: 8px;
+            margin-bottom: 24px;
+        }
+
+        .results-message {
+            font-family: Georgia, serif;
+            font-size: 22px;
+            font-style: italic;
+            color: var(--white);
+            margin-bottom: 8px;
+        }
+
+        .missed-section {
+            text-align: left;
+            margin-top: 24px;
+        }
+
+        .missed-title {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            color: var(--white-dim);
+            margin-bottom: 12px;
+            font-weight: bold;
+        }
+
+        .missed-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .missed-list li {
+            background: rgba(231,76,60,0.12);
+            border: 1px solid rgba(231,76,60,0.3);
+            padding: 10px 14px;
+            font-size: 14px;
+            display: flex;
+            justify-content: space-between;
+            font-family: Georgia, serif;
+        }
+
+        .missed-state { color: var(--white); }
+        .missed-capital { color: var(--accent); font-weight: bold; }
+
+        .play-again-btn {
+            width: 100%;
+            background: var(--white);
+            color: var(--green);
+            border: none;
+            padding: 18px;
+            font-family: Georgia, serif;
+            font-size: 15px;
+            font-weight: bold;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .play-again-btn:hover {
+            background: var(--accent);
+            transform: translateY(-2px);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(16px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+
+    <!-- START SCREEN -->
+    <div id="start-screen">
+        <div class="star-banner">★ ★ ★ ★ ★</div>
+        <h1>US State<br><span>Capitals</span></h1>
+    
+        <div class="divider"></div>
+        <button class="start-btn" onclick="startQuiz()">Begin Quiz</button>
+        <div class="info-row">
+            <div class="info-item">
+                <div class="info-num">50</div>
+                <div class="info-label">States</div>
+            </div>
+            <div class="info-item">
+                <div class="info-num">3</div>
+                <div class="info-label">Choices</div>
+            </div>
+            <div class="info-item">
+                <div class="info-num">∞</div>
+                <div class="info-label">Replays</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- QUIZ SCREEN -->
+    <div id="quiz-screen">
+        <div class="progress-bar-wrap">
+            <div class="progress-bar" id="progress-bar"></div>
+        </div>
+        <div class="question-meta">
+            <div class="question-num" id="question-num">Question 1 of 50</div>
+            <div class="score-display" id="score-display">Score: 0</div>
+        </div>
+        <div class="question-card">
+            <div class="question-label">What is the capital of...</div>
+            <div class="question-text" id="question-text"></div>
+        </div>
+        <div class="options-grid" id="options-grid"></div>
+        <div class="feedback" id="feedback"></div>
+        <button class="next-btn" id="next-btn" onclick="nextQuestion()">Next Question →</button>
+    </div>
+
+    <!-- RESULTS SCREEN -->
+    <div id="results-screen">
+        <div class="results-card">
+            <div class="results-label">Final Score</div>
+            <div class="results-score" id="results-score"></div>
+            <div class="results-total">out of 50</div>
+            <div class="results-message" id="results-message"></div>
+            <div class="missed-section" id="missed-section"></div>
+        </div>
+        <button class="play-again-btn" onclick="restartQuiz()">Play Again</button>
+    </div>
+
+</div>
+
+<script>
+const states = {
+    "Alabama": { capital: "Montgomery", cities: ["Birmingham", "Huntsville", "Mobile"] },
+    "Alaska": { capital: "Juneau", cities: ["Anchorage", "Fairbanks", "Sitka"] },
+    "Arizona": { capital: "Phoenix", cities: ["Tucson", "Mesa", "Scottsdale"] },
+    "Arkansas": { capital: "Little Rock", cities: ["Fort Smith", "Fayetteville", "Springdale"] },
+    "California": { capital: "Sacramento", cities: ["Los Angeles", "San Francisco", "San Diego"] },
+    "Colorado": { capital: "Denver", cities: ["Colorado Springs", "Aurora", "Fort Collins"] },
+    "Connecticut": { capital: "Hartford", cities: ["Bridgeport", "New Haven", "Stamford"] },
+    "Delaware": { capital: "Dover", cities: ["Wilmington", "Newark", "Middletown"] },
+    "Florida": { capital: "Tallahassee", cities: ["Miami", "Orlando", "Tampa"] },
+    "Georgia": { capital: "Atlanta", cities: ["Savannah", "Augusta", "Columbus"] },
+    "Hawaii": { capital: "Honolulu", cities: ["Hilo", "Kailua", "Pearl City"] },
+    "Idaho": { capital: "Boise", cities: ["Nampa", "Meridian", "Idaho Falls"] },
+    "Illinois": { capital: "Springfield", cities: ["Chicago", "Rockford", "Peoria"] },
+    "Indiana": { capital: "Indianapolis", cities: ["Fort Wayne", "Evansville", "South Bend"] },
+    "Iowa": { capital: "Des Moines", cities: ["Cedar Rapids", "Davenport", "Sioux City"] },
+    "Kansas": { capital: "Topeka", cities: ["Wichita", "Overland Park", "Kansas City"] },
+    "Kentucky": { capital: "Frankfort", cities: ["Louisville", "Lexington", "Bowling Green"] },
+    "Louisiana": { capital: "Baton Rouge", cities: ["New Orleans", "Shreveport", "Lafayette"] },
+    "Maine": { capital: "Augusta", cities: ["Portland", "Lewiston", "Bangor"] },
+    "Maryland": { capital: "Annapolis", cities: ["Baltimore", "Rockville", "Gaithersburg"] },
+    "Massachusetts": { capital: "Boston", cities: ["Worcester", "Springfield", "Cambridge"] },
+    "Michigan": { capital: "Lansing", cities: ["Detroit", "Grand Rapids", "Ann Arbor"] },
+    "Minnesota": { capital: "Saint Paul", cities: ["Minneapolis", "Rochester", "Duluth"] },
+    "Mississippi": { capital: "Jackson", cities: ["Gulfport", "Southaven", "Hattiesburg"] },
+    "Missouri": { capital: "Jefferson City", cities: ["Kansas City", "St. Louis", "Springfield"] },
+    "Montana": { capital: "Helena", cities: ["Billings", "Missoula", "Great Falls"] },
+    "Nebraska": { capital: "Lincoln", cities: ["Omaha", "Bellevue", "Grand Island"] },
+    "Nevada": { capital: "Carson City", cities: ["Las Vegas", "Reno", "Henderson"] },
+    "New Hampshire": { capital: "Concord", cities: ["Manchester", "Nashua", "Dover"] },
+    "New Jersey": { capital: "Trenton", cities: ["Newark", "Jersey City", "Paterson"] },
+    "New Mexico": { capital: "Santa Fe", cities: ["Albuquerque", "Las Cruces", "Rio Rancho"] },
+    "New York": { capital: "Albany", cities: ["New York City", "Buffalo", "Rochester"] },
+    "North Carolina": { capital: "Raleigh", cities: ["Charlotte", "Greensboro", "Durham"] },
+    "North Dakota": { capital: "Bismarck", cities: ["Fargo", "Grand Forks", "Minot"] },
+    "Ohio": { capital: "Columbus", cities: ["Cleveland", "Cincinnati", "Toledo"] },
+    "Oklahoma": { capital: "Oklahoma City", cities: ["Tulsa", "Norman", "Broken Arrow"] },
+    "Oregon": { capital: "Salem", cities: ["Portland", "Eugene", "Gresham"] },
+    "Pennsylvania": { capital: "Harrisburg", cities: ["Philadelphia", "Pittsburgh", "Allentown"] },
+    "Rhode Island": { capital: "Providence", cities: ["Cranston", "Warwick", "Pawtucket"] },
+    "South Carolina": { capital: "Columbia", cities: ["Charleston", "North Charleston", "Greenville"] },
+    "South Dakota": { capital: "Pierre", cities: ["Sioux Falls", "Rapid City", "Aberdeen"] },
+    "Tennessee": { capital: "Nashville", cities: ["Memphis", "Knoxville", "Chattanooga"] },
+    "Texas": { capital: "Austin", cities: ["Houston", "Dallas", "San Antonio"] },
+    "Utah": { capital: "Salt Lake City", cities: ["Provo", "West Valley City", "West Jordan"] },
+    "Vermont": { capital: "Montpelier", cities: ["Burlington", "South Burlington", "Rutland"] },
+    "Virginia": { capital: "Richmond", cities: ["Virginia Beach", "Norfolk", "Chesapeake"] },
+    "Washington": { capital: "Olympia", cities: ["Seattle", "Spokane", "Tacoma"] },
+    "West Virginia": { capital: "Charleston", cities: ["Huntington", "Morgantown", "Parkersburg"] },
+    "Wisconsin": { capital: "Madison", cities: ["Milwaukee", "Green Bay", "Kenosha"] },
+    "Wyoming": { capital: "Cheyenne", cities: ["Casper", "Laramie", "Gillette"] }
+};
+
+let questions = [];
+let current = 0;
+let score = 0;
+let missed = [];
+
+function shuffle(arr) {
+    return arr.sort(() => Math.random() - 0.5);
+}
+
+function buildQuestions() {
+    questions = shuffle(Object.keys(states)).map(state => {
+        const correct = states[state].capital;
+        const wrong = shuffle([...states[state].cities]).slice(0, 2);
+        const opts = shuffle([correct, ...wrong]);
+        return { state, correct, opts };
+    });
+}
+
+function startQuiz() {
+    buildQuestions();
+    current = 0;
+    score = 0;
+    missed = [];
+    document.getElementById('start-screen').style.display = 'none';
+    document.getElementById('quiz-screen').style.display = 'block';
+    showQuestion();
+}
+
+function showQuestion() {
+    const q = questions[current];
+    const letters = ['A', 'B', 'C'];
+
+    document.getElementById('question-num').textContent = `Question ${current + 1} of 50`;
+    document.getElementById('score-display').textContent = `Score: ${score}`;
+    document.getElementById('progress-bar').style.width = `${(current / 50) * 100}%`;
+    document.getElementById('question-text').textContent = q.state;
+    document.getElementById('feedback').textContent = '';
+    document.getElementById('feedback').className = 'feedback';
+    document.getElementById('next-btn').style.display = 'none';
+
+    const grid = document.getElementById('options-grid');
+    grid.innerHTML = '';
+
+    q.opts.forEach((opt, i) => {
+        const btn = document.createElement('button');
+        btn.className = 'option-btn';
+        btn.innerHTML = `<span class="option-letter">${letters[i]}</span>${opt}`;
+        btn.onclick = () => handleAnswer(opt, q.correct);
+        grid.appendChild(btn);
+    });
+}
+
+function handleAnswer(chosen, correct) {
+    const buttons = document.querySelectorAll('.option-btn');
+    buttons.forEach(btn => {
+        btn.disabled = true;
+        const text = btn.textContent.slice(1); // remove letter
+        if (text === correct && chosen !== correct) btn.classList.add('reveal');
+        if (text === chosen && chosen === correct) btn.classList.add('correct');
+        if (text === chosen && chosen !== correct) btn.classList.add('wrong');
+    });
+
+    const feedback = document.getElementById('feedback');
+    if (chosen === correct) {
+        score++;
+        feedback.textContent = '✓ Correct!';
+        feedback.className = 'feedback correct';
+    } else {
+        missed.push({ state: questions[current].state, capital: correct });
+        feedback.textContent = `✗ The answer was ${correct}`;
+        feedback.className = 'feedback wrong';
+    }
+
+    document.getElementById('next-btn').style.display = 'block';
+    document.getElementById('next-btn').textContent =
+        current === 49 ? 'See Results →' : 'Next Question →';
+}
+
+function nextQuestion() {
+    current++;
+    if (current >= 50) {
+        showResults();
+    } else {
+        showQuestion();
+    }
+}
+
+function showResults() {
+    document.getElementById('quiz-screen').style.display = 'none';
+    document.getElementById('results-screen').style.display = 'block';
+    document.getElementById('results-score').innerHTML = `<span>${score}</span>`;
+
+    const pct = score / 50;
+    let message = '';
+    if (pct === 1) message = "Perfect score. Flawless.";
+    else if (pct >= 0.9) message = "Outstanding knowledge.";
+    else if (pct >= 0.7) message = "Solid effort — well done.";
+    else if (pct >= 0.5) message = "A respectable start.";
+    else message = "Room to grow — try again!";
+    document.getElementById('results-message').textContent = message;
+
+    const missedSection = document.getElementById('missed-section');
+    if (missed.length > 0) {
+        missedSection.innerHTML = `
+            <div class="missed-title">Study These (${missed.length} missed)</div>
+            <ul class="missed-list">
+                ${missed.map(m => `
+                    <li>
+                        <span class="missed-state">${m.state}</span>
+                        <span class="missed-capital">${m.capital}</span>
+                    </li>`).join('')}
+            </ul>`;
+    } else {
+        missedSection.innerHTML = '';
+    }
+}
+
+function restartQuiz() {
+    document.getElementById('results-screen').style.display = 'none';
+    startQuiz();
+}
+</script>
+</body>
+</html>
